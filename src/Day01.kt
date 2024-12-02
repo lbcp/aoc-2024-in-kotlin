@@ -1,21 +1,36 @@
+import java.io.File
+import kotlin.math.abs
+
 fun main() {
-    fun part1(input: List<String>): Int {
-        return input.size
+    fun part1(firstList: List<Int>, secondList: List<Int>): Int {
+        var result = 0
+        for (i in 0 until firstList.size) {
+            result += abs(firstList[i] - secondList[i])
+        }
+        return result
     }
 
-    fun part2(input: List<String>): Int {
-        return input.size
+    fun part2(firstList: List<Int>, secondList: List<Int>): Int {
+        var result = 0
+        for (num in firstList) {
+            val similarity = secondList.count { it == num} * num
+            result += similarity
+        }
+        return result
     }
 
-    // Test if implementation meets criteria from the description, like:
-    check(part1(listOf("test_input")) == 1)
+    val input = mutableListOf<MutableList<Int>>()
+    File("src/Input_Day1.txt").useLines { lines ->
+        lines.forEach {
+            input.add(
+                it.split("   ")
+                .map { it.toInt() }
+                .toMutableList())
+        }
+    }
+    val firstList = input.map { it[0] }.sorted()
+    val secondList = input.map { it[1] }.sorted()
 
-    // Or read a large test input from the `src/Day01_test.txt` file:
-    val testInput = readInput("Day01_test")
-    check(part1(testInput) == 1)
-
-    // Read the input from the `src/Day01.txt` file.
-    val input = readInput("Day01")
-    part1(input).println()
-    part2(input).println()
+    part1(firstList, secondList).println()
+    part2(firstList, secondList).println()
 }
