@@ -1,5 +1,4 @@
 import java.io.File
-import kotlin.math.abs
 
 fun main() {
     fun readInput(filename: String): MutableList<List<String>>{
@@ -81,21 +80,24 @@ fun main() {
             for (j in 0 until input[i].size) {
                 if (input[i][j] == "A") {
                     // Here I only need to check two diagonals
-                    val word1 = mutableListOf<String>()
-                    word1.add(input.getOrElse(i-1) { listOf("Z")}.getOrElse(j-1) { "Z" })
-                    word1.add(input.getOrElse(i) { listOf("Z")}.getOrElse(j) { "Z" })
-                    word1.add(input.getOrElse(i+1) { listOf("Z")}.getOrElse(j+1) { "Z" })
-                    val word2 = mutableListOf<String>()
-                    word2.add(input.getOrElse(i+1) { listOf("Z")}.getOrElse(j-1) { "Z" })
-                    word2.add(input.getOrElse(i) { listOf("Z")}.getOrElse(j) { "Z" })
-                    word2.add(input.getOrElse(i-1) { listOf("Z")}.getOrElse(j+1) { "Z" })
+                    val word1 = buildString {
+                        append(input.getOrElse(i-1) { listOf("Z")}.getOrElse(j-1) { "Z" })
+                        append(input.getOrElse(i) { listOf("Z")}.getOrElse(j) { "Z" })
+                        append(input.getOrElse(i+1) { listOf("Z")}.getOrElse(j+1) { "Z" })
+                    }
+                    val word2 = buildString {
+                        append(input.getOrElse(i+1) { listOf("Z")}.getOrElse(j-1) { "Z" })
+                        append(input.getOrElse(i) { listOf("Z")}.getOrElse(j) { "Z" })
+                        append(input.getOrElse(i-1) { listOf("Z")}.getOrElse(j+1) { "Z" })
+                    }
 
-                    if ((word1.joinToString(separator = "") == "MAS" || word1.joinToString(separator = "") == "SAM") &&
-                        (word2.joinToString(separator = "") == "MAS" || word2.joinToString(separator = "") == "SAM"))
+                    if ((word1 == "MAS" || word1 == "SAM") &&
+                        (word2 == "MAS" || word2 == "SAM"))
                         result += 1
                 }
             }
         }
+
         return result
     }
 
