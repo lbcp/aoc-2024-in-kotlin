@@ -26,16 +26,13 @@ fun main() {
     fun part1(rules: MutableList<List<Int>>, updates: MutableList<List<Int>>): Int {
         // I simply check for each number if it violates any rules
         fun checkRules(num1:Int, num2:Int): Boolean {
-            rules.forEach { if (it[0] == num2 && it[1] == num1) {
-                return false
-                }
-            }
+            rules.forEach { if (it[0] == num2 && it[1] == num1) return false }
             return true
         }
 
         var result = 0
         jump@ for (update in updates) {
-            for (i in 0 until update.size) {
+            for (i in update.indices) {
                 for (j in i until update.size) {
                     if (!checkRules(update[i], update[j])) continue@jump
                 }
@@ -45,9 +42,48 @@ fun main() {
         return result
     }
 
-    fun part2(input: MutableList<List<String>>): Int {
+    fun part2(rules: MutableList<List<Int>>, updates: MutableList<List<Int>>): Int {
+        fun checkRules(num1:Int, num2:Int): Boolean {
+            rules.forEach { if (it[0] == num2 && it[1] == num1) return false }
+            return true
+        }
 
-        return 0
+        fun swappingItems(update: MutableList<Int>): Int {
+            var swapped = true
+            while (swapped) {
+                swapped = false
+                for (i in update.indices) {
+                    for (j in i until update.size) {
+                        if (!checkRules(update[i], update[j])) {
+                            val temp = update[j]
+                            update[j] = update[i]
+                            update[i] = temp
+                            swapped = true
+                        }
+                    }
+                }
+            }
+            return update[(update.size/2)]
+        }
+
+
+        val wrongUpdates = mutableListOf<List<Int>>()
+        jump@ for (update in updates) {
+            for (i in update.indices) {
+                for (j in i until update.size) {
+                    if (!checkRules(update[i], update[j])) {
+                        wrongUpdates.add(update)
+                        continue@jump
+                    }
+                }
+            }
+        }
+
+        var result = 0
+        for (update in wrongUpdates) {
+            result += swappingItems(update.toMutableList())
+        }
+        return result
     }
 
     val rules = readInput1("src/Input_Day5.txt")
@@ -56,5 +92,5 @@ fun main() {
     println("Result part 1:")
     part1(rules, pages).println()
     println("Result part 2:")
-    //part2(input).println()
+    part2(rules, pages).println()
 }
