@@ -13,29 +13,26 @@ fun main() {
         return Pair(sum, values)
     }
 
+    fun calculateResults(operators: List<Char>, valuesList: List<Long> ): Long {
+        var result = valuesList[0]
+        for (i in 1 until valuesList.size) {
+            when (operators[i-1]) {
+                '+' -> result += valuesList[i]
+                '*' -> result *= valuesList[i]
+                '|' -> result = (result.toString() + valuesList[i].toString()).toLong()
+            }
+        }
+        return result
+    }
+
     fun part1(sums: MutableList<Long>, values: MutableList<List<Long>>): Long {
         var maxOperators = 0
         values.forEach { if (it.size > maxOperators) maxOperators = it.size - 1 }
         val correctSums = mutableSetOf<Long>()
         val correctMap = mutableMapOf<List<Long>, Long>()
-        var totalSum: Long = 0
-
-        fun calculateResults(operators: List<Char>, valuesList: List<Long> ): Long {
-            // TODO: Finish this part.
-            // I now need to calculate with the operators.
-            var result = valuesList[0]
-            for (i in 1 until valuesList.size) {
-                when (operators[i-1]) {
-                    '+' -> result += valuesList[i]
-                    '*' -> result *= valuesList[i]
-                }
-            }
-            return result
-        }
 
         fun iterateCombinations(operatorList: List<Char>) {
             if (operatorList.size == maxOperators)  {
-                println(operatorList)
                 for (i in values.indices) {
                     if (sums[i] == calculateResults(operatorList, values[i])) {
                         correctSums.add(sums[i])
@@ -57,48 +54,9 @@ fun main() {
         values.forEach { if (it.size > maxOperators) maxOperators = it.size - 1 }
         val correctSums = mutableSetOf<Long>()
         val correctMap = mutableMapOf<List<Long>, Long>()
-        var totalSum: Long = 0
-
-        fun calculateResults(listOfOperators: List<Char>, listOfValues: List<Long> ): Long {
-            // For Part 2 I first need to combine the numbers and purge the | operator
-            var operators = mutableListOf<Char>()
-            var valuesList = mutableListOf<Long>()
-            if ('|' in listOfOperators) {
-                operators = listOfOperators.filter { it != '|'}.toMutableList()
-                var j = 0
-                for (i in listOfValues.indices) {
-                    println(j)
-                    if (j >= listOfValues.size) break
-                    if (listOfOperators[i] == '|' && listOfValues.size-1 >= j+1) {
-                        valuesList.add((listOfValues[j].toString() + listOfValues[j+1].toString()).toLong())
-                        j += 2
-                    } else {
-                        valuesList.add(listOfValues[j])
-                        j += 1
-                    }
-                }
-            } else {
-                operators = listOfOperators.toMutableList()
-                valuesList = listOfValues.toMutableList()
-            }
-            println(listOfValues)
-            println(listOfOperators)
-            println(valuesList)
-            println(operators)
-
-            var result = valuesList[0]
-            for (i in 1 until valuesList.size) {
-                when (operators[i-1]) {
-                    '+' -> result += valuesList[i]
-                    '*' -> result *= valuesList[i]
-                    '|' -> continue
-                }
-            }
-            return result
-        }
 
         fun iterateCombinations(operatorList: List<Char>) {
-            if (operatorList.size == maxOperators + 1) {
+            if (operatorList.size == maxOperators) {
                 for (i in values.indices) {
                     if (sums[i] == calculateResults(operatorList, values[i])) {
                         correctSums.add(sums[i])
@@ -106,10 +64,6 @@ fun main() {
                     }
                 }
                 return
-            } else if (operatorList.size == maxOperators) {
-                // the last operator must not be an |
-                iterateCombinations(operatorList + listOf('+'))
-                iterateCombinations(operatorList + listOf('*'))
             } else {
                 iterateCombinations(operatorList + listOf('+'))
                 iterateCombinations(operatorList + listOf('*'))
@@ -117,15 +71,11 @@ fun main() {
             }
         }
         iterateCombinations(emptyList())
-        println(correctMap)
         return correctMap.values.sum()
     }
 
-    val (sums, values) = readInput("src/TestInput_Day7.txt")
-    //check(part1(testInput) == 1)
+    val (sums, values) = readInput("src/Input_Day7.txt")
 
-    // Read the input from the `src/Day01.txt` file.
-    //val input = readInput("Day01")
     part1(sums, values).println()
     part2(sums, values).println()
 }
