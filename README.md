@@ -1,18 +1,10 @@
-# aoc-2024-in-kotlin
+# Advent of Kotlin 2024
 
-Welcome to the Advent of Code[^aoc] Kotlin project created by [lbcp][github] using the [Advent of Code Kotlin Template][template] delivered by JetBrains.
+This year, I am trying to solve the [Advent of Code][aoc] entirely in [Kotlin][kotlin].
 
-In this repository, lbcp is about to provide solutions for the puzzles using [Kotlin][kotlin] language.
+I used the official [Advent of Code Template][template] to create this repository.
 
-If you're stuck with Kotlin-specific questions or anything related to this template, check out the following resources:
-
-- [Kotlin docs][docs]
-- [Kotlin Slack][slack]
-- Template [issue tracker][issues]
-
-
-[^aoc]:
-    [Advent of Code][aoc] – An annual event of Christmas-oriented programming challenges started December 2015.
+[Advent of Code][aoc] – An annual event of Christmas-oriented programming challenges started December 2015.
     Every year since then, beginning on the first day of December, a programming puzzle is published every day for twenty-five days.
     You can solve the puzzle and provide an answer using the language of your choice.
 
