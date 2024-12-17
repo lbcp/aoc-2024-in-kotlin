@@ -129,12 +129,26 @@ fun main() {
     }
 
     fun walkInner(tiles: MutableList<List<Int>>, startTile: List<Int>, plot: Int): Pair<Int, MutableList<List<Int>>> {
-        val inputMap = readInput("src/Input_Day12.txt")
+    // First try. Does not catch all edge cases.
+        //val inputMap = readInput("src/Input_Day12.txt")
+        //val outerValue = inputMap[startTile[0]][startTile[1]-1]
+        val upperCorner = tiles.first()
+        val lowerCorner = tiles.last()
         var turns = 1
         var direction = "down"
         var currTile = startTile.toMutableList().toList()
         val walkedTile = mutableListOf<List<Int>>()
-        while (startTile != currTile || direction != "left") {
+        if (listOf(currTile[0] - 1, currTile[1]) !in tiles ||
+            listOf(currTile[0] - 1, currTile[1] - 1) !in tiles) return Pair(0, walkedTile)
+        while (currTile != startTile || direction != "left") {
+            //println("I am at position: $currTile")
+            //println("I am going $direction")
+            //println("I did $turns turns already.")
+            val orderedByLast = tiles.filter { it[0] == currTile[0] }
+            if (orderedByLast.isEmpty()) return Pair(0, walkedTile)
+            val outerLeft = orderedByLast.sortedBy { it[1] }.first()
+            val outRight = orderedByLast.sortedBy { it[1] }.last()
+
             walkedTile.add(currTile)
             /*
             println("##Start checking##")
@@ -149,43 +163,49 @@ fun main() {
                 listOf(currTile[0] - 1, currTile[1]) !in tiles && listOf(currTile[0] + 1, currTile[1]) !in tiles) {
                 return Pair(0, walkedTile)
             }
+            if (orderedByLast.isEmpty() || currTile[0] < upperCorner[0] || currTile[1] > lowerCorner[0] ||
+                currTile[1] < outerLeft[1] || currTile[1] > outRight[1]) return Pair(0, walkedTile)
             when (direction) {
-                "down" ->
-                    if (listOf(currTile[0], currTile[1] - 1) !in tiles) {
+                "down" -> if (listOf(currTile[0], currTile[1] - 1) !in tiles) {
+                    direction = "left"
+                    turns += 1
+                    currTile = listOf(currTile[0] - 1, currTile[1])
+                } else if (listOf(currTile[0], currTile[1] - 1) in tiles && listOf(currTile[0] + 1, currTile[1]) !in tiles) {
+                    direction = "down"
+                    currTile = listOf(currTile[0] + 1, currTile[1])
+                } else if (listOf(currTile[0], currTile[1] - 1) in tiles && listOf(currTile[0] + 1, currTile[1]) in tiles) {
+                    // check diagonally -> Do for all
+                    if (listOf(currTile[0] + 1, currTile[1] - 1) !in tiles) {
+                        println("edgeCase")
+                        currTile = listOf(currTile[0] + 1, currTile[1] - 1)
                         direction = "left"
-                        turns += 1
-                        currTile = listOf(currTile[0] - 1, currTile[1])
-                    }
-                    else if (listOf(currTile[0], currTile[1] - 1) in tiles && listOf(currTile[0] + 1, currTile[1]) !in tiles) {
-                        direction = "down"
-                        currTile = listOf(currTile[0] + 1, currTile[1])
-                    } else if (listOf(currTile[0], currTile[1] -1) in tiles && listOf(currTile[0] + 1, currTile[1]) in tiles) {
-                        direction = "right"
-                        turns += 1
-                    }
-                    else {
-                        println("That should not happen")
-                        println(tiles)
-                        return Pair(0, walkedTile)
-                        }
+                    } else direction = "right"
+                    turns += 1
+                } else {
+                    println("That should not happen")
+                    println(tiles)
+                    return Pair(0, walkedTile)
+                }
 
-                "left" ->
-                    if (listOf(currTile[0] - 1, currTile[1]) !in tiles) {
+                "left" -> if (listOf(currTile[0] - 1, currTile[1]) !in tiles) {
                         direction = "up"
                         currTile = listOf(currTile[0] - 1, currTile[1])
                         turns += 1
                     } else if (listOf(currTile[0] - 1, currTile[1]) in tiles && listOf(currTile[0], currTile[1] - 1) !in tiles) {
                         currTile = listOf(currTile[0], currTile[1] - 1)
                     } else if  (listOf(currTile[0] - 1, currTile[1]) in tiles && listOf(currTile[0], currTile[1] - 1) in tiles) {
-                        direction = "down"
+                    // check diagonally -> Do for all
+                        if (listOf(currTile[0] - 1, currTile[1] - 1) !in tiles) {
+                            println("edgeCase")
+                            currTile = listOf(currTile[0] - 1, currTile[1] - 1)
+                            direction = "up"
+                        } else direction = "down"
                         turns += 1
-                    }
-                    else {
+                    } else {
                         println("That should not happen")
                         println(tiles)
                         return Pair(0, walkedTile)
                     }
-
                 "right" ->
                     if (listOf(currTile[0] + 1, currTile[1]) !in tiles) {
                         direction = "down"
@@ -195,7 +215,11 @@ fun main() {
                         currTile = listOf(currTile[0], currTile[1] + 1)
                     }
                     else if (listOf(currTile[0] + 1, currTile[1]) in tiles && listOf(currTile[0], currTile[1] + 1) in tiles) {
-                        direction = "up"
+                        if (listOf(currTile[0] + 1, currTile[1] + 1) !in tiles) {
+                            println("edgeCase")
+                            currTile = listOf(currTile[0] + 1, currTile[1] + 1)
+                            direction = "down"
+                        } else direction = "up"
                         turns += 1
                     } else {
                         println("That should not happen")
@@ -212,17 +236,90 @@ fun main() {
                         currTile =
                             listOf(currTile[0] - 1, currTile[1])
                     } else if (listOf(currTile[0], currTile[1] + 1) in tiles && listOf(currTile[0] - 1, currTile[1]) in tiles) {
-                        direction = "left"
+                        if (listOf(currTile[0] - 1, currTile[1] + 1) !in tiles) {
+                            println("edgeCase")
+                            currTile = listOf(currTile[0] - 1, currTile[1] + 1)
+                            direction = "right"
+                        } else direction = "left"
                         turns += 1
                     } else {
                         println("That should not happen")
                         println(tiles)
                         return Pair(0, walkedTile)
                     }
+                }
+            }
+        return Pair(turns, walkedTile)
+    }
+
+    fun walkInner2(tiles: MutableList<List<Int>>): Int {
+        var turns = 1
+        var direction = "right"
+        val startTile = tiles[0]
+        var currTile = tiles[0]
+        val walkedTile = mutableSetOf<List<Int>>()
+        while (currTile !in walkedTile && direction != "right") {
+            walkedTile.add(currTile)
+            when (direction) {
+                "down" -> // done?
+                    if (listOf(currTile[0], currTile[1] - 1) in tiles) {
+                        direction = "left"
+                        currTile = listOf(currTile[0], currTile[1] - 1)
+                        turns += 1
+                    } else if (listOf(currTile[0], currTile[1] - 1) !in tiles && listOf(currTile[0] + 1, currTile[1]) in tiles) {
+                        currTile = listOf(currTile[0] + 1, currTile[1])
+                    } else if (listOf(currTile[0], currTile[1] - 1) !in tiles && listOf(currTile[0] + 1, currTile[1]) !in tiles
+                        && listOf(currTile[0], currTile[1] + 1) in tiles) {
+                        direction = "right"
+                        turns += 1
+                    } else return 0
+
+                "left" -> //done
+                    if (listOf(currTile[0] - 1, currTile[1]) in tiles) {
+                        direction = "up"
+                        currTile = listOf(currTile[0] - 1, currTile[1])
+                        turns += 1
+                    } else if (listOf(currTile[0] - 1, currTile[1]) !in tiles && listOf(currTile[0], currTile[1] - 1) in tiles) {
+                        currTile = listOf(currTile[0], currTile[1] - 1)
+                    }
+                    else if (listOf(currTile[0] - 1, currTile[1]) !in tiles && listOf(currTile[0], currTile[1] - 1) !in tiles
+                        && listOf(currTile[0] + 1, currTile[1]) in tiles){
+                        direction = "down"
+                        turns += 1
+                    } else return 0
+
+                "right" -> //done
+                    if (listOf(currTile[0] + 1, currTile[1]) in tiles) {
+                        direction = "down"
+                        currTile = listOf(currTile[0] + 1, currTile[1])
+                        turns += 1
+                    } else if (listOf(currTile[0] + 1, currTile[1]) !in tiles && listOf(currTile[0], currTile[1] + 1) in tiles) {
+                        currTile = listOf(currTile[0], currTile[1] + 1)
+                    }
+                    else if (listOf(currTile[0] + 1, currTile[1]) !in tiles && listOf(currTile[0], currTile[1] + 1) !in tiles
+                        && listOf(currTile[0] - 1, currTile[1]) in tiles) {
+                        direction = "up"
+                        turns += 1
+                    } else return 0
+
+                "up" ->
+                    if (listOf(currTile[0], currTile[1] + 1) in tiles) {
+                        direction = "right"
+                        currTile = listOf(currTile[0], currTile[1] + 1)
+                        turns += 1
+                    } else if (listOf(currTile[0], currTile[1] + 1) !in tiles && listOf(currTile[0] - 1, currTile[1]) in tiles) {
+                        currTile =
+                            listOf(currTile[0] - 1, currTile[1])
+                    }
+                    else if (listOf(currTile[0], currTile[1] + 1) !in tiles && listOf(currTile[0] - 1, currTile[1]) !in tiles
+                        && listOf(currTile[0], currTile[1] - 1) in tiles) {
+                        direction = "left"
+                        turns += 1
+                    } else return 0
             }
 
         }
-        return Pair(turns, walkedTile)
+        return turns
     }
 
     fun part2(map: MutableList<MutableList<String>>): Int {
@@ -255,9 +352,9 @@ fun main() {
                 }
             }
         }
-        println(plotMap)
+        //println(plotMap)
         plotMap.forEach { (_, value) ->  value.sortWith(compareBy( {it[0]}, { it[1] }))}
-        println(plotMap)
+        //println(plotMap)
 
         var price = 0
         plotMap.forEach { (plot, tiles) ->
@@ -285,11 +382,13 @@ fun main() {
                             var (res, walked) = walkInner(tiles, listOf(l[0], l[1] + 1), plot)
                             //println(listOf(l[0], l[1] + 1))
                             walkedTiles.addAll(walked)
-                            price += res * tiles.size
-                            if (res > 0) {
+
+                            if (res > 3) {
+                                price += res * tiles.size
                                 println("Plot ID: $plot")
-                                println("Tiles: $tiles")
+                                //println("Tiles: $tiles")
                                 println("Inner Tiles: $walked")
+                                println("Sides added: $res")
                             }
                             //println(walked)
                             //break
@@ -305,7 +404,17 @@ fun main() {
         return price
     }
 
+    val testInput = readInput("src/TestInput_Day12.txt")
+    check(part2(testInput) == 1206)
+    val testInput1 = readInput("src/TestInput_Day12_2.txt")
+    check(part2(testInput1) == 368)
+    val testInput3 = readInput("src/TestInput_Day12_3.txt")
+    check(part2(testInput3) == 236)
+    val testInput4 = readInput("src/TestInput_Day12_4.txt")
+    check(part2(testInput4) == 436)
+
     val input = readInput("src/Input_Day12.txt")
+    check(part2(testInput4) == 815788)
     //part1(input).println()
     part2(input).println()
 }
