@@ -1,7 +1,5 @@
 import java.io.File
-import kotlin.math.max
-import kotlin.math.min
-import kotlin.math.*
+import java.math.RoundingMode
 
 fun main() {
     fun readInput(filename: String): MutableMap<Int, MutableList<List<Long>>>{
@@ -87,81 +85,57 @@ fun main() {
         }
 
         var winCosts = 0L
-        machines.forEach { key, lists ->
+        machines.forEach { (_, lists) ->
             val allX = generateSums(lists[0], lists[2])
             val allY = generateSums(lists[1], lists[2])
             winCosts += addSums(allX, allY, lists[2])
 
         }
-
         return winCosts
     }
 
+    fun checkResult(target: Long, pressesA: Long, pressesB: Long, stepA: Long, stepB: Long): Boolean {
+        return target == (pressesA*stepA) + (pressesB*stepB)
+    }
 
     fun part2(machines: MutableMap<Int, MutableList<List<Long>>>): Long {
-        // For part 2, I try to use the greatest common divisor.
-        // https://en.wikipedia.org/wiki/Greatest_common_divisor
-        // I assume that it will always be cheaper if the ration of B/A presses is the smallest.
-        fun getGCD(num1:Long, num2:Long): Long {
-            // Euclidean algorithm from Wikipedia
-            var larger = max(num1, num2)
-            var smaller = min(num1, num2)
-            while (larger != 0L) {
-                val temp = larger
-                larger = larger % smaller
-                smaller = temp
-            }
-            return smaller
-        }
-
-
         var winCosts = 0L
-
-        machines.forEach { (id, lists) ->
+        machines.forEach { (_, lists) ->
             val a = lists[0]
             val b = lists[1]
+            val aX = a[0]
+            val aY = a[1]
+            val bX = b[0]
+            val bY = b[1]
             val prize = lists[2]
-            val x_range = 2..(a[0] + b[0]) * 100
-            val y_range = 2..(a[1] + b[1]) * 100
-            println("Machine id: $id")
-            println("$a")
-            println("$b")
-            println(prize)
-            println(prize[0] % a[0] == 0L)
-            println(prize[1] % a[1] == 0L)
-            println("X")
-            for (i in x_range) {
-                if (prize[0] % i == 0L) println(i)
-            }
-            println("Y")
-            for (i in y_range) {
-                if (prize[1] % i == 0L) println(i)
+            val pX = prize[0]
+            val pY = prize[1]
+
+            // Since nothing worked, I had to find out if a prize position is reachable.
+            // The equations are as follows:
+            // pX = (aX * pressesA) + (bX * pressesB)
+            // pY = (aY * pressesA) + (bY * pressesB)
+            //
+            // This results in 2 equations with 2 unknowns.
+            // pB = (pX - (aX *pA)) / bX
+            // pB = (pY - (aY * pA)) / bY
+            // There is a rounding issue. Thus, I need to convert it to Double then to long
+            val pB = (pY - aY * pX / aX.toDouble()) / (bY - aY * bX / aX.toDouble())
+            val pA = (pX - pB * bX) / aX
+
+            val pressesB = (pB.toBigDecimal().setScale(0, RoundingMode.HALF_UP)).toLong()
+            val pressesA = (pA.toBigDecimal().setScale(0, RoundingMode.HALF_UP)).toLong()
+
+            if (checkResult(pX, pressesA, pressesB, aX, bX) && checkResult(pY, pressesA, pressesB, aY, bY)) {
+                winCosts += (3 * pressesA) + pressesB
             }
 
-
-                /*
-                val gcdX = getGCD(a[0], b[0])
-            val gcdY = getGCD(a[1], b[1])
-            val gcdPrizeX = getGCD(prize[0], a[0])
-            val gcdPrizeY = getGCD(prize[1], a[1])
-            //if (max(gcdPrizeX, gcdPrizeY) % min(gcdPrizeX, gcdPrizeY) == 0L) {
-                println("Can be done with $id")
-                println(a)
-                println(b)
-                println(prize)
-                println("GCD X: $gcdX; GCD Y: $gcdY")
-                println("Price GCD X: $gcdPrizeX; GCD Y: $gcdPrizeY")
-            //}
-        */
         }
-
-
-
         return winCosts
     }
 
-    //val input = readInput("src/Input_Day13.txt")
-    //part1(input).println()
-    val input2 = readInput2("src/TestInput_Day13.txt")
+    val input = readInput("src/Input_Day13.txt")
+    part1(input).println()
+    val input2 = readInput2("src/Input_Day13.txt")
     part2(input2).println()
 }
