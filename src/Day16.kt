@@ -16,9 +16,9 @@ fun main() {
         return input
     }
 
-    //class Task(val functionCall: Unit, val score: Int)
-    class Task(private val functionInitializer: () -> () -> Unit, val score: Int) {
-        val functionCall: () -> Unit by lazy { functionInitializer() }
+
+    class Task(private val functionInitializer: () -> Unit, val score: Int) {
+        val functionCall: Unit by lazy { functionInitializer() }
     }
 
 
@@ -26,10 +26,10 @@ fun main() {
         // I'll use some kind of poor mens Dijkstra algorithm
         // Since the direction makes a difference I generated a rather expressive cost map for the nodes.
         val costMap = mapOf<String, MutableMap<List<Int>, Int>>(
-            "north" to mutableMapOf<List<Int>, Int>(),
-            "south" to mutableMapOf<List<Int>, Int>(),
-            "west" to mutableMapOf<List<Int>, Int>(),
-            "east" to mutableMapOf<List<Int>, Int>(),
+            "north" to mutableMapOf(),
+            "south" to mutableMapOf(),
+            "west" to mutableMapOf(),
+            "east" to mutableMapOf(),
         )
 
         var bestScore: Int = Int.MAX_VALUE
@@ -48,14 +48,13 @@ fun main() {
                 "south" to listOf(row + 1, col),
                 "west" to listOf(row, col - 1),
                 "east" to listOf(row, col + 1))
-            // val curIndex = roads.size
-            // Exit conditions
-
             curPath.add(pos)
+
+            // Exit conditions
             if (map[row][col] == "E") {
                 if (bestScore >= score) {
                     bestScore = score
-                    val scorePath = pathsFound.getOrPut(score, { mutableListOf() })
+                    val scorePath = pathsFound.getOrPut(score) { mutableListOf() }
                     scorePath.add(curPath)
                 }
                 return
@@ -84,21 +83,15 @@ fun main() {
             if (direction in possibleDirections) {
                 val newScore = score + 1
                 pathQueue.add(Task(functionInitializer = {
-                    {
-                        stepForward(map,directionMap[direction]!!,direction, curPath, newScore)
-                    }
-                },
-                    newScore))
+                                        stepForward(map,directionMap[direction]!!,direction, curPath, newScore)
+                                    }, newScore))
                 possibleDirections.remove(direction)
             }
             for (dir in possibleDirections) {
                 val newScore = score + 1001
                 pathQueue.add(Task(functionInitializer = {
-                    {
-                        stepForward(map,directionMap[dir]!!, dir, curPath, newScore)
-                    }
-                },
-                    newScore))
+                                        stepForward(map,directionMap[dir]!!, dir, curPath, newScore)
+                                     }, newScore))
             }
         }
 
@@ -117,21 +110,19 @@ fun main() {
         }
 
         val initTask = Task(functionInitializer = {
-            {
                 stepForward(
                     map,
                     startPos,
                     "east",
-                    mutableListOf<List<Int>>(),
-                    0
-                )
-            } }, 0)
+                    mutableListOf(),
+                    0)
+             }, 0)
         pathQueue.add(initTask)
 
         while (pathQueue.isNotEmpty()) {
             if (pathQueue.peek().score > bestScore) break
             val runTask = pathQueue.poll() ?: break
-            runTask.functionCall()
+            runTask.functionCall
         }
 
         val bestTiles = mutableSetOf<List<Int>>()
