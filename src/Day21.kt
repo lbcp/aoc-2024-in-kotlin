@@ -34,29 +34,43 @@ fun main() {
         val rowMoves = curRow - tRow
         val colMoves = curCol - tCol
 
+        // After a frustratingly long time, I found that the following movement order is required:
+        // Left > Up > Down > Right
         if (!dirPad) {
             // To avoid hitting the empty key, I first check if I am in the last row
-            if (curRow == 3) {
+            // I manually exclude the "bad" paths
+            if (curRow == 3 && tCol == 0) { // Coming from last row, going full right
                 repeat(rowMoves) { outString.append("^") }
                 repeat(abs(colMoves)) { if (colMoves > 0) outString.append("<") else outString.append(">")}
-            } else {
+            } else if (curCol == 0 && tRow == 3) { // Coming from full right, going full down.
                 repeat(abs(colMoves)) { if (colMoves > 0) outString.append("<") else outString.append(">")}
                 repeat(abs(rowMoves)) { if (rowMoves > 0) outString.append("^") else outString.append("v")}
             }
-        } else {
-            if (curRow == 0) {
+            else {
+                repeat(abs(colMoves)) { if (colMoves > 0) outString.append("<")}
+                repeat(abs(rowMoves)) { if (rowMoves > 0) outString.append("^") else outString.append("v")}
+                repeat(abs(colMoves)) { if (colMoves < 0) outString.append(">")}
+            }
+        } else { // That is the Directional Pad
+            // I apply the same logic to the dirpads as to the keypad
+            if (curRow == 0 && tCol == 0) {
                 repeat(abs(rowMoves)) { outString.append("v") }
                 repeat(abs(colMoves)) { if (colMoves > 0) outString.append("<") else outString.append(">") }
-            } else {
-                repeat(abs(colMoves)) { if (colMoves > 0) outString.append("<") else outString.append(">") }
+            } else if (curCol == 0 && tRow == 0) {
+                repeat(abs(colMoves)) { outString.append(">") }
                 repeat(abs(rowMoves)) { outString.append("^") }
+            }
+            else {
+                repeat(abs(colMoves)) { if (colMoves > 0) outString.append("<") }
+                repeat(abs(rowMoves)) { if (rowMoves > 0) outString.append("^") else outString.append("v")}
+                repeat(abs(colMoves)) { if (colMoves < 0) outString.append(">") }
             }
         }
         return outString.toString()
     }
 
-    fun part1(input: MutableList<String>): Int {
-        var result = 0
+    fun part1(input: MutableList<String>): Long {
+        var result = 0L
         for (ins in input) {
             println(ins)
             var finalString = ""
@@ -69,24 +83,28 @@ fun main() {
                 curKeyPos = i
                 finalString += pathToKey + "A"
             }
-            println(finalString)
+            //println(finalString)
 
+            for (i in 0 until 1)
             // Second robot
-            var secondString = ""
-            curKeyPos = 'A'
-            for (c in finalString) {
-                // println("I want to get to the $c and start at $curKeyPos")
-                val pathToKey = findShortestPath(curKeyPos, c, true)
-                // println(pathToKey)
-                curKeyPos = c
-                secondString += pathToKey + "A"
+            {
+                println("Round $i completed")
+                var secondString = ""
+                curKeyPos = 'A'
+                for (c in finalString) {
+                    // println("I want to get to the $c and start at $curKeyPos")
+                    val pathToKey = findShortestPath(curKeyPos, c, true)
+                    // println(pathToKey)
+                    curKeyPos = c
+                    secondString += pathToKey + "A"
+                }
+                finalString = secondString
             }
-            println(secondString)
 
             //Historian
             var historianString = ""
             curKeyPos = 'A'
-            for (c in secondString) {
+            for (c in finalString) {
                 // println("I want to get to the $c and start at $curKeyPos")
                 val pathToKey = findShortestPath(curKeyPos, c, true)
                 // println(pathToKey)
@@ -96,7 +114,6 @@ fun main() {
 
             println(historianString)
             println(historianString.length)
-            println(ins.substringBefore("A").toInt())
             println(historianString.length * ins.substringBefore("A").toInt())
             result += historianString.length * ins.substringBefore("A").toInt()
         }
@@ -110,22 +127,9 @@ fun main() {
     }
 
     // Test if implementation meets criteria from the description, like:
-    //val testInput = readInput("src/TestInput_Day21.txt")
-    //part1(testInput).println()
-    //check(part1(testInput) == 126384)
+    val testInput = readInput("src/TestInput_Day21.txt")
+    check(part1(testInput) == 126384.toLong())
 
     val input = readInput("src/Input_Day21.txt")
     part1(input).println()
-
-    /*
-    // Or read a large test input from the `src/Day01_test.txt` file:
-    val testInput = readInput("Day01_test")
-    check(part1(testInput) == 1)
-
-    // Read the input from the `src/Day01.txt` file.
-    val input = readInput("Day01")
-    part1(input).println()
-    part2(input).println()
-
-     */
 }
